@@ -1,0 +1,74 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.deployment.mariadb.name }}  # values.yaml에서 설정한 mariadb 이름
+  labels:
+    app: {{ .Values.deployment.mariadb.app }}  # mariadb 앱 라벨
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: {{ .Values.deployment.mariadb.app }}  # mariadb 앱 선택자
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.deployment.mariadb.app }}  # mariadb 앱 라벨
+    spec:
+      containers:
+        - name: {{ .Values.deployment.mariadb.app }}
+          image: {{ .Values.deployment.mariadb.image }}:{{ .Values.deployment.mariadb.tags }}  # mariadb 이미지와 태그
+          ports:
+            - containerPort: 3306
+              protocol: TCP
+          envFrom:
+            - secretRef:
+                name: {{ .Values.deployment.mariadb.secret }}  # mariadb secret 참조
+
+          volumeMounts:
+            - mountPath: /var/lib/mysql
+              name: mariadb-storage
+
+          resources:
+            requests:
+              memory: "512Mi"
+              cpu: "500m"
+            limits:
+              memory: "1Gi"
+              cpu: "1"
+
+      volumes:
+        - name: mariadb-storage
+          persistentVolumeClaim:
+            claimName: mariadb-pvc  # PVC는 별도로 정의 필요
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.deployment.fastapi.name }}  # values.yaml에서 설정한 fastapi 이름
+  labels:
+    app: {{ .Values.deployment.fastapi.app }}  # fastapi 앱 라벨
+spec:
+  replicas: {{ .Values.replicaCount }}  # 복제본 수 설정
+  selector:
+    matchLabels:
+      app: {{ .Values.deployment.fastapi.app }}  # fastapi 앱 선택자
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.deployment.fastapi.app }}  # fastapi 앱 라벨
+    spec:
+      containers:
+        - name: {{ .Values.deployment.fastapi.app }}
+          image: {{ .Values.deployment.fastapi.image }}  # fastapi 이미지 (추가로 values.yaml에서 정의 필요)
+          ports:
+            - containerPort: 8000
+              protocol: TCP
+
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "250m"
+            limits:
+              memory: "512Mi"
+              cpu: "500m"

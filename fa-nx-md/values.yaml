@@ -1,0 +1,42 @@
+replicaCount: 2  # 복제본 개수를 2로 설정
+
+service:
+  name: helm-mynginx-svc
+  app: helm-mynginx
+  type: ClusterIP
+
+
+deployment:
+  mariadb:
+    name: helm-mariadb106-deploy
+    app: helm-mariadb106
+    image: mariadb
+    imagePullPolicy: IfNotPresent
+    tags: 10.6.19-focal
+    secret: helm-mariadb-secret
+  fastapi:
+    name: helm-fastapi-deploy
+    app: k8s-fastapi
+    image: fastapi
+
+
+serviceAccount:
+  create: true
+  name: ""
+
+ingress:
+  enabled: false  # 기본적으로 Ingress를 비활성화
+  annotations: {}
+  hosts:
+    - host: chart-example.local
+      paths:
+        - /
+  tls: []
+
+autoscaling:
+  enabled: true  # 자동 스케일링 활성화
+  minReplicas: 1
+  maxReplicas: 5
+  targetCPUUtilizationPercentage: 75  # CPU 사용량이 75%일 때 스케일 조정
+
+

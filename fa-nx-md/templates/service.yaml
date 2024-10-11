@@ -1,0 +1,37 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.service.name }}      # values.yaml에서 설정한 이름
+spec:
+  selector:
+    app: {{ .Values.deployment.mariadb.app }}  # values.yaml에서 설정한 app 값
+  ports:
+    - port: 3306
+      protocol: TCP
+      targetPort: 3306
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.deployment.fastapi.app }}-svc  # values.yaml에서 설정한 fastapi app 이름
+spec:
+  selector:
+    app: {{ .Values.deployment.fastapi.app }}  # fastapi 앱 선택자
+  ports:
+    - port: 8000
+      protocol: TCP
+      targetPort: 8000
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.service.name }}-nginx-svc  # values.yaml에서 설정한 nginx 이름
+spec:
+  selector:
+    app: {{ .Values.service.app }}  # nginx 서비스의 app 이름
+  ports:
+    - port: {{ .Values.service.port }}  # values.yaml에서 설정한 포트
+      protocol: TCP
+      targetPort: 80
